@@ -7,7 +7,7 @@ var router = express.Router();
 var MetricsSchema = new mongoose.Schema({
     user: { type: String, required: true },
     work: { type: String, required: true },
-    date: { type: Date, required: true}
+    date: { type: Number, required: true }
 });
 var Metrics = (function () {
     function Metrics() {
@@ -48,8 +48,9 @@ router.get('/:user', function (req, res) {
     });
 });
 router.get('/:user/:year/:month/:day', function (req, res) {
-    var user = { "date": { "$gte": new Date(req.params.year, Number(req.params.month) - 1, req.params.day, 0, 0),
-            "$lt": new Date(req.params.year, Number(req.params.month) - 1, Number(req.params.day) + 1, 0, 0) } };
+    var start = new Date(Number(req.params.year), Number(req.params.month) - 1, Number(req.params.day), 0, 0);
+    var end = new Date(Number(req.params.year), Number(req.params.month) - 1, Number(req.params.day) + 1, 0, 0);
+    var user = { "date": { "$gte": start.getTime(), "$lt": end.getTime() } };
     user['user'] = req.params.user;
     metrics.find(user, function (json) {
         res.send(json);

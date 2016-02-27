@@ -9,13 +9,13 @@ var router = express.Router();
 interface IMetricsSchemaDocument extends mongoose.Document {
     user:String;
     work:String;
-    date:Date;
+    date:Number;
 }
 
 var MetricsSchema:mongoose.Schema = new mongoose.Schema({
     user: {type: String, required: true},
     work: {type: String, required: true},
-    date: {type: Date, required: true, default:Date.now()}
+    date: {type: Number, required: true}
 });
 
 class Metrics {
@@ -29,7 +29,7 @@ class Metrics {
         this.mModel = <mongoose.Model<IMetricsSchemaDocument>>this.mMongoose.model('Metrics', MetricsSchema);
     }
 
-    public insert(json:String, callback:(json:string)=>any){
+    public insert(json:String, callback:(json:string)=>any) {
         var model = new this.mModel(json);
         model.save((err:any, res:IMetricsSchemaDocument)=> {
             console.log(<string>(res.toJSON()));
@@ -37,8 +37,8 @@ class Metrics {
         });
     }
 
-    public find(user:any, callback:(json:string)=>any){
-        this.mModel.find(user,(err:any, res:IMetricsSchemaDocument[])=> {
+    public find(user:any, callback:(json:string)=>any) {
+        this.mModel.find(user, (err:any, res:IMetricsSchemaDocument[])=> {
             console.log(<string>(JSON.stringify(res)));
             callback(<string>(JSON.stringify(res)));
         });
@@ -54,7 +54,7 @@ router.post('/', function (req:express.Request, res:express.Response) {
 });
 
 router.get('/', function (req:express.Request, res:express.Response) {
-    metrics.find({},(json:string)=>{
+    metrics.find({}, (json:string)=> {
         res.send(json);
     });
 });
@@ -62,17 +62,19 @@ router.get('/', function (req:express.Request, res:express.Response) {
 router.get('/:user', function (req:express.Request, res:express.Response) {
     var user = {};
     user['user'] = req.params.user;
-    metrics.find(user,(json:string)=>{
+    metrics.find(user, (json:string)=> {
         res.send(json);
     });
 });
 
 router.get('/:user/:year/:month/:day', function (req:express.Request, res:express.Response) {
-    var user = {"date": {"$gte": new Date(req.params.year, Number(req.params.month)-1, req.params.day, 0, 0),
-        "$lt": new Date(req.params.year, Number(req.params.month)-1, Number(req.params.day)+1, 0, 0)}};
+    var start = new Date(Number(req.params.year), Number(req.params.month) - 1, Number(req.params.day), 0, 0);
+    var end = new Date(Number(req.params.year), Number(req.params.month) - 1, Number(req.params.day) + 1, 0, 0);
+
+    var user = {"date": {"$gte": start.getTime(), "$lt": end.getTime()}};
 
     user['user'] = req.params.user;
-    metrics.find(user,(json:string)=>{
+    metrics.find(user, (json:string)=> {
         res.send(json);
     });
 });
