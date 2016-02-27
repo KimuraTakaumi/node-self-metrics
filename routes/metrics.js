@@ -7,7 +7,7 @@ var router = express.Router();
 var MetricsSchema = new mongoose.Schema({
     user: { type: String, required: true },
     work: { type: String, required: true },
-    date: { type: Date, required: true, default: Date.now() }
+    date: { type: Date, required: true}
 });
 var Metrics = (function () {
     function Metrics() {
